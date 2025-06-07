@@ -78,7 +78,7 @@ function App() {
     <div className="min-h-screen bg-navy">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-center mb-8 text-white">
-          Chat with me!
+          GutiGPT
         </h1>
         <ChatInterface 
           messages={messages} 
