@@ -4,18 +4,34 @@ import './App.css';
 
 function App() {
   const [messages, setMessages] = useState([]);
-  const API_URL = process.env.REACT_APP_API_URL || window.location.origin;
-
+  const [apiUrlWarning, setApiUrlWarning] = useState('');
+  
+  // Get the API URL from environment variable
+  const API_URL = process.env.REACT_APP_API_URL;
+  
   useEffect(() => {
-    // Log the API URL when component mounts
-    console.log('Environment:', {
-      REACT_APP_API_URL: process.env.REACT_APP_API_URL,
-      origin: window.location.origin,
-      finalApiUrl: API_URL
-    });
-  }, []);
+    // Check if API_URL is properly configured
+    if (!API_URL) {
+      console.error('REACT_APP_API_URL is not set! Please configure it in Vercel.');
+      setApiUrlWarning('Warning: API URL is not configured. Please set REACT_APP_API_URL in Vercel settings.');
+    } else if (API_URL.includes('vercel.app')) {
+      console.error('REACT_APP_API_URL should point to your Railway deployment, not Vercel!');
+      setApiUrlWarning('Warning: API URL is incorrectly pointing to Vercel instead of Railway.');
+    } else {
+      console.log('Using API URL:', API_URL);
+    }
+  }, [API_URL]);
 
   const handleSendMessage = async (message) => {
+    // Don't proceed if API_URL is not set
+    if (!API_URL) {
+      setMessages(prev => [...prev, { 
+        role: 'assistant', 
+        content: 'Error: Backend API URL is not configured. Please set REACT_APP_API_URL in Vercel settings.' 
+      }]);
+      return;
+    }
+
     // Add user message to chat
     setMessages(prev => [...prev, { role: 'user', content: message }]);
 
@@ -62,6 +78,8 @@ function App() {
 
   // Try to connect to health endpoint on mount
   useEffect(() => {
+    if (!API_URL) return;
+
     const checkHealth = async () => {
       try {
         const response = await fetch(`${API_URL}/health`);
@@ -69,6 +87,7 @@ function App() {
         console.log('Health check response:', data);
       } catch (error) {
         console.error('Health check failed:', error);
+        setApiUrlWarning('Warning: Could not connect to backend API. Please verify the API URL and ensure the backend is running.');
       }
     };
     checkHealth();
@@ -78,11 +97,8 @@ function App() {
     <div className="min-h-screen bg-gray-100">
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold text-center mb-8">
-          LangChain Tavily Agent Chat
+          Chat with me!
         </h1>
-        <div className="text-center mb-4 text-sm text-gray-600">
-          API URL: {API_URL}
-        </div>
         <ChatInterface 
           messages={messages} 
           onSendMessage={handleSendMessage} 
