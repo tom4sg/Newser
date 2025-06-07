@@ -74,8 +74,8 @@ try:
         raise ValueError("TAVILY_API_KEY not found in environment variables")
     
     model = ChatAnthropic(
-        model_name="claude-3-sonnet-20240229",
-        api_key=anthropic_api_key
+        model="claude-3-5-sonnet-20240620",
+        anthropic_api_key=anthropic_api_key
     )
     logger.debug("ChatAnthropic model initialized")
     
