@@ -75,9 +75,9 @@ function App() {
   }, [API_URL]);
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-navy">
       <div className="container mx-auto px-4 py-8">
-        <h1 className="text-3xl font-bold text-center mb-8">
+        <h1 className="text-3xl font-bold text-center mb-8 text-white">
           Chat with me!
         </h1>
         <ChatInterface 
