@@ -1,6 +1,6 @@
 {
-  "short_name": "LangChain Chat",
-  "name": "LangChain Tavily Agent Chat Interface",
+  "short_name": "Chat App",
+  "name": "Chat with me!",
   "icons": [
     {
       "src": "favicon.ico",

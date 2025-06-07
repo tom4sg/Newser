@@ -9,13 +9,11 @@ function App() {
   const API_URL = process.env.REACT_APP_API_URL;
   
   useEffect(() => {
-    // Check if API_URL is properly configured
+    // Check if API_URL is properly configured (logging only for debugging)
     if (!API_URL) {
       console.error('REACT_APP_API_URL is not set! Please configure it in Vercel.');
     } else if (API_URL.includes('vercel.app')) {
       console.error('REACT_APP_API_URL should point to your Railway deployment, not Vercel!');
-    } else {
-      console.log('Using API URL:', API_URL);
     }
   }, [API_URL]);
 
@@ -34,9 +32,6 @@ function App() {
 
     try {
       const fullUrl = `${API_URL}/api/chat`;
-      console.log('Making request to:', fullUrl);
-      console.log('Request body:', { message });
-
       const response = await fetch(fullUrl, {
         method: 'POST',
         headers: {
@@ -45,11 +40,7 @@ function App() {
         body: JSON.stringify({ message }),
       });
 
-      console.log('Response status:', response.status);
-      console.log('Response headers:', Object.fromEntries(response.headers.entries()));
-
       const data = await response.json();
-      console.log('Response data:', data);
       
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status} - ${JSON.stringify(data)}`);
@@ -61,14 +52,10 @@ function App() {
         content: data.response || 'No response received from the server' 
       }]);
     } catch (error) {
-      console.error('Full error details:', {
-        message: error.message,
-        stack: error.stack,
-        error
-      });
+      console.error('Error:', error);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: `Error: ${error.message}\n\nPlease check the browser console for more details.` 
+        content: 'Sorry, there was an error processing your message. Please try again.' 
       }]);
     }
   };
@@ -79,9 +66,7 @@ function App() {
 
     const checkHealth = async () => {
       try {
-        const response = await fetch(`${API_URL}/health`);
-        const data = await response.json();
-        console.log('Health check response:', data);
+        await fetch(`${API_URL}/health`);
       } catch (error) {
         console.error('Health check failed:', error);
       }
