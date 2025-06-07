@@ -19,7 +19,11 @@ app = FastAPI()
 # Add CORS middleware
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # React app's default port
+    allow_origins=[
+        "http://localhost:3000",  # Local development
+        "https://langchain-tavily-agent.vercel.app",  # Vercel deployment
+        "https://langchain-tavily-agent-*.vercel.app"  # Preview deployments
+    ],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

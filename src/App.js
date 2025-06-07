@@ -4,13 +4,14 @@ import './App.css';
 
 function App() {
   const [messages, setMessages] = useState([]);
+  const API_URL = process.env.REACT_APP_API_URL || window.location.origin;
 
   const handleSendMessage = async (message) => {
     // Add user message to chat
     setMessages(prev => [...prev, { role: 'user', content: message }]);
 
     try {
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
