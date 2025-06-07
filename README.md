@@ -1,4 +1,4 @@
-# LangChain Tavily Agent Chat
+# GutiGPT
 
 A chat interface for interacting with a LangChain agent powered by Claude and Tavily search.
 
