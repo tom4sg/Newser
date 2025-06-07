@@ -91,7 +91,13 @@ try:
     agent = create_react_agent(model, tools, REACT_PROMPT)
     logger.debug("Agent created successfully")
     
-    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
+    agent_executor = AgentExecutor(
+        agent=agent,
+        tools=tools,
+        verbose=True,
+        handle_parsing_errors=True,
+        max_iterations=3
+    )
     logger.debug("AgentExecutor initialized successfully")
     
 except Exception as e:
