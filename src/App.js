@@ -4,7 +4,6 @@ import './App.css';
 
 function App() {
   const [messages, setMessages] = useState([]);
-  const [apiUrlWarning, setApiUrlWarning] = useState('');
   
   // Get the API URL from environment variable
   const API_URL = process.env.REACT_APP_API_URL;
@@ -13,10 +12,8 @@ function App() {
     // Check if API_URL is properly configured
     if (!API_URL) {
       console.error('REACT_APP_API_URL is not set! Please configure it in Vercel.');
-      setApiUrlWarning('Warning: API URL is not configured. Please set REACT_APP_API_URL in Vercel settings.');
     } else if (API_URL.includes('vercel.app')) {
       console.error('REACT_APP_API_URL should point to your Railway deployment, not Vercel!');
-      setApiUrlWarning('Warning: API URL is incorrectly pointing to Vercel instead of Railway.');
     } else {
       console.log('Using API URL:', API_URL);
     }
@@ -27,7 +24,7 @@ function App() {
     if (!API_URL) {
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: 'Error: Backend API URL is not configured. Please set REACT_APP_API_URL in Vercel settings.' 
+        content: 'Sorry, I cannot process your message at the moment. Please try again later.' 
       }]);
       return;
     }
@@ -87,7 +84,6 @@ function App() {
         console.log('Health check response:', data);
       } catch (error) {
         console.error('Health check failed:', error);
-        setApiUrlWarning('Warning: Could not connect to backend API. Please verify the API URL and ensure the backend is running.');
       }
     };
     checkHealth();
