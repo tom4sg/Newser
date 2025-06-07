@@ -55,7 +55,8 @@ Final Answer: the final answer to the original input question
 Begin!
 
 Question: {input}
-Thought: Let me approach this step by step"""
+Thought: Let me approach this step by step
+{agent_scratchpad}"""
 )
 
 # Initialize the agent components
@@ -78,7 +79,7 @@ try:
 
     # Create the agent with the prompt template
     agent = create_react_agent(model, tools, REACT_PROMPT)
-    agent_executor = AgentExecutor(agent=agent, tools=tools)
+    agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
     logger.info("Agent initialized successfully")
 except Exception as e:
     logger.error(f"Error initializing agent: {str(e)}")
