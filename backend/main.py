@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 import os
 import logging
+import traceback
 from typing import List
 from langchain_anthropic import ChatAnthropic
 from langchain_community.tools.tavily_search import TavilySearchResults
@@ -16,7 +17,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Set up logging
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)  # Changed to DEBUG level
 logger = logging.getLogger(__name__)
 
 # Initialize FastAPI app
@@ -61,28 +62,43 @@ Thought: Let me approach this step by step
 
 # Initialize the agent components
 try:
-    model = ChatAnthropic(
-        model_name="claude-3-sonnet-20240229",  # Updated model name
-        api_key=os.getenv("ANTHROPIC_API_KEY")
-    )
-    if not os.getenv("ANTHROPIC_API_KEY"):
+    logger.debug("Starting agent initialization...")
+    
+    anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
+    tavily_api_key = os.getenv("TAVILY_API_KEY")
+    
+    logger.debug(f"ANTHROPIC_API_KEY present: {bool(anthropic_api_key)}")
+    logger.debug(f"TAVILY_API_KEY present: {bool(tavily_api_key)}")
+    
+    if not anthropic_api_key:
         raise ValueError("ANTHROPIC_API_KEY not found in environment variables")
-        
+    if not tavily_api_key:
+        raise ValueError("TAVILY_API_KEY not found in environment variables")
+    
+    model = ChatAnthropic(
+        model_name="claude-3-sonnet-20240229",
+        api_key=anthropic_api_key
+    )
+    logger.debug("ChatAnthropic model initialized")
+    
     search = TavilySearchResults(
-        api_key=os.environ["TAVILY_API_KEY"],
+        api_key=tavily_api_key,
         max_results=2
     )
-    if not os.environ.get("TAVILY_API_KEY"):
-        raise ValueError("TAVILY_API_KEY not found in environment variables")
-        
+    logger.debug("TavilySearchResults tool initialized")
+    
     tools = [search]
 
     # Create the agent with the prompt template
     agent = create_react_agent(model, tools, REACT_PROMPT)
+    logger.debug("Agent created successfully")
+    
     agent_executor = AgentExecutor(agent=agent, tools=tools, verbose=True)
-    logger.info("Agent initialized successfully")
+    logger.debug("AgentExecutor initialized successfully")
+    
 except Exception as e:
     logger.error(f"Error initializing agent: {str(e)}")
+    logger.error(f"Traceback: {traceback.format_exc()}")
     raise
 
 class ChatRequest(BaseModel):
@@ -94,22 +110,21 @@ class ChatResponse(BaseModel):
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        logger.info(f"Received chat request: {request.message}")
+        logger.debug(f"Received chat request: {request.message}")
         
-        # Check if API keys are present
-        if not os.getenv("ANTHROPIC_API_KEY"):
-            raise ValueError("ANTHROPIC_API_KEY not found")
-        if not os.getenv("TAVILY_API_KEY"):
-            raise ValueError("TAVILY_API_KEY not found")
-            
         # Process the message through the agent
+        logger.debug("Starting agent invocation...")
         response = await agent_executor.ainvoke({"input": request.message})
-        logger.info("Successfully processed chat request")
+        logger.debug(f"Agent response: {response}")
+        
         return ChatResponse(response=response["output"])
             
     except Exception as e:
+        error_trace = traceback.format_exc()
         logger.error(f"Error processing chat request: {str(e)}")
-        raise HTTPException(status_code=500, detail=str(e))
+        logger.error(f"Traceback: {error_trace}")
+        # Return the actual error message to help with debugging
+        return ChatResponse(response=f"Error: {str(e)}\n\nTraceback: {error_trace}")
 
 if __name__ == "__main__":
     import uvicorn
