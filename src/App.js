@@ -11,6 +11,7 @@ function App() {
     setMessages(prev => [...prev, { role: 'user', content: message }]);
 
     try {
+      console.log('Sending request to:', `${API_URL}/api/chat`);
       const response = await fetch(`${API_URL}/api/chat`, {
         method: 'POST',
         headers: {
@@ -19,19 +20,20 @@ function App() {
         body: JSON.stringify({ message }),
       });
 
+      const data = await response.json();
+      console.log('Response data:', data);
+      
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new Error(`HTTP error! status: ${response.status} - ${data.detail || 'Unknown error'}`);
       }
 
-      const data = await response.json();
-      
       // Add AI response to chat
       setMessages(prev => [...prev, { role: 'assistant', content: data.response }]);
     } catch (error) {
-      console.error('Error:', error);
+      console.error('Error details:', error);
       setMessages(prev => [...prev, { 
         role: 'assistant', 
-        content: 'Sorry, I encountered an error. Please try again.' 
+        content: `Error: ${error.message}\n\nPlease check the browser console for more details.` 
       }]);
     }
   };

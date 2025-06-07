@@ -1,5 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 import os
 import logging
@@ -23,17 +24,14 @@ logger = logging.getLogger(__name__)
 # Initialize FastAPI app
 app = FastAPI()
 
-# Add CORS middleware
+# Add CORS middleware with more permissive settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",  # Local development
-        "https://langchain-tavily-agent.vercel.app",  # Vercel deployment
-        "https://langchain-tavily-agent-*.vercel.app"  # Preview deployments
-    ],
+    allow_origins=["*"],  # More permissive for testing
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"]
 )
 
 # Define the prompt template
@@ -106,6 +104,7 @@ class ChatRequest(BaseModel):
 
 class ChatResponse(BaseModel):
     response: str
+    error: str = None
 
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
@@ -123,8 +122,19 @@ async def chat(request: ChatRequest):
         error_trace = traceback.format_exc()
         logger.error(f"Error processing chat request: {str(e)}")
         logger.error(f"Traceback: {error_trace}")
-        # Return the actual error message to help with debugging
-        return ChatResponse(response=f"Error: {str(e)}\n\nTraceback: {error_trace}")
+        
+        # Return a proper error response
+        return JSONResponse(
+            status_code=500,
+            content={
+                "response": str(e),
+                "error": error_trace
+            }
+        )
+
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy"}
 
 if __name__ == "__main__":
     import uvicorn
