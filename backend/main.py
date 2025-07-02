@@ -44,6 +44,8 @@ REACT_PROMPT = PromptTemplate.from_template(
 
 {tools}
 
+Use the information from the tools to answer questions!
+
 Use the following format:
 
 Question: the input question you must answer
@@ -76,7 +78,7 @@ try:
 
     newsapi = NewsApiClient(api_key=news_api_key)
 
-    @tool("news_top_headlines", return_direct=True)
+    @tool
     def news_top_headlines(
         q: Optional[str] = None,
         sources: Optional[str] = None,
@@ -101,7 +103,7 @@ try:
         )
 
     # 3) Wrap /v2/everything
-    @tool("news_everything", return_direct=True)
+    @tool
     def news_everything(
         q: str,
         sources: Optional[str] = None,
@@ -129,7 +131,7 @@ try:
             page_size=page_size,
         )
 
-    @tool("news_sources", return_direct=True)
+    @tool
     def news_sources(
         category: Optional[str] = None,
         language: Optional[str] = None,
