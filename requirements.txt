@@ -8,3 +8,5 @@ langgraph==0.0.26
 python-multipart==0.0.9
 pydantic==2.6.4
 newsapi-python
+langchain-community
+uuid

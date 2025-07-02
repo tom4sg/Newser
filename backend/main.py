@@ -15,6 +15,8 @@ from langchain.prompts import PromptTemplate
 from newsapi import NewsApiClient
 from typing import Optional
 from langchain.tools import tool
+from langchain_community.chat_message_histories import RedisChatMessageHistory
+from uuid import uuid4
 
 from dotenv import load_dotenv
 
@@ -210,10 +212,17 @@ try:
     # Create the agent with the prompt template
     agent = create_react_agent(model, tools, REACT_PROMPT)
     logger.debug("Agent created successfully")
+
+    memory = RedisChatMessageHistory(
+            session_id=uuid4().hex,
+            redis_url=os.getenv("REDIS_URL"),
+            ttl=3600
+        )
     
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
+        memory=memory,
         verbose=True,
         handle_parsing_errors=True,
         max_iterations=6,
@@ -237,10 +246,11 @@ class ChatResponse(BaseModel):
 async def chat(request: ChatRequest):
     try:
         logger.debug(f"Received chat request: {request.message}")
-        
+
         # Process the message through the agent
         logger.debug("Starting agent invocation...")
         response = await agent_executor.ainvoke({"input": request.message})
+        
         logger.debug(f"Agent response: {response}")
         
         return ChatResponse(response=response["output"])
