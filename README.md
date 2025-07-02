@@ -1,6 +1,6 @@
-# GutiGPT
+# Newser
 
-A chat interface for interacting with a LangChain agent powered by Claude and Tavily search.
+A chat interface for staying up to date with breaking news and pop culture on the daily. 
 
 ## Project Structure
 
