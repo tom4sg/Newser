@@ -215,7 +215,7 @@ try:
 
     memory = RedisChatMessageHistory(
             session_id=uuid4().hex,
-            url=os.getenv("REDIS_URL"),
+            redis_url="redis://localhost:6379",
             ttl=3600
         )
     
