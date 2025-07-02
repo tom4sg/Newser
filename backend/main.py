@@ -147,6 +147,52 @@ try:
             country=country,
         )
     
+    @tool
+    def news_event_summary(
+        q: str,
+        sources: Optional[str] = None,
+        language: Optional[str] = None,
+        page_size: int = 3,   # ← bump default to 3
+    ) -> str:
+        """
+        1) Fetch the top 3 headlines for `q`.
+        2) Extract `content` or fallback to `description` from each.
+        3) Ask Claude to distill the most important points across all three.
+        """
+        # 1) search
+        data = newsapi.get_top_headlines(
+            q=q,
+            sources=sources,
+            language=language,
+            page_size=page_size,
+        )
+        articles = data.get("articles", [])
+        if not articles:
+            return f"No recent articles found for '{q}'."
+
+        # 2) collect up to 3 snippets
+        snippets = []
+        for art in articles[:3]:
+            text = art.get("content") or art.get("description") or ""
+            if text:
+                snippets.append(text)
+        if not snippets:
+            return "Couldn't find any text to summarize in the top articles."
+
+        combined = "\n\n---\n\n".join(snippets)
+
+        # 3) build prompt
+        prompt = (
+            "Below are snippets from the top 3 news articles matching your query. "
+            "Summarize the most important points across these snippets into three concise bullet points:\n\n"
+            f"{combined}\n\n"
+            "Bullet points:"
+        )
+
+        # synchronous LLM call via ChatAnthropic
+        resp = model.predict([HumanMessage(content=prompt)])
+        return getattr(resp, "content", resp)
+    
     search = TavilySearchResults(
         api_key=tavily_api_key,
         max_results=5
