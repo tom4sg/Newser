@@ -27,7 +27,7 @@ const ChatInterface = ({ messages, onSendMessage }) => {
       <div className="h-[600px] overflow-y-auto p-6 bg-white">
         {messages.length === 0 && (
           <div className="text-center text-text-secondary mt-8">
-            <p className="text-lg">Start a conversation with GutiGPT</p>
+            <p className="text-lg">Start a conversation with Newser</p>
             <p className="text-sm mt-2">Ask me anything!</p>
           </div>
         )}
