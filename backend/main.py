@@ -15,7 +15,7 @@ from langchain.prompts import PromptTemplate
 from newsapi import NewsApiClient
 from typing import Optional
 from langchain.tools import tool
-
+from langgraph.checkpoint.memory import InMemorySaver
 
 from dotenv import load_dotenv
 
@@ -208,8 +208,10 @@ try:
 
     tools = [tavily_search, news_top_headlines, news_everything, news_sources, news_event_summary]
 
+    checkpointer = InMemorySaver()
+
     # Create the agent with the prompt template
-    agent = create_react_agent(model, tools, REACT_PROMPT)
+    agent = create_react_agent(model, tools, REACT_PROMPT, checkpointer=checkpointer)
     logger.debug("Agent created successfully")
 
     agent_executor = AgentExecutor(
