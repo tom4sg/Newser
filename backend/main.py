@@ -15,7 +15,7 @@ from langchain.prompts import PromptTemplate
 from newsapi import NewsApiClient
 from typing import Optional
 from langchain.tools import tool
-from langchain_community.chat_message_histories import RedisChatMessageHistory
+from langchain_redis import RedisChatMessageHistory
 from uuid import uuid4
 
 from dotenv import load_dotenv
@@ -207,7 +207,7 @@ try:
         """
         return search.run(query)
 
-    tools = [tavily_search, news_top_headlines, news_everything, news_sources]
+    tools = [tavily_search, news_top_headlines, news_everything, news_sources, news_event_summary]
 
     # Create the agent with the prompt template
     agent = create_react_agent(model, tools, REACT_PROMPT)
