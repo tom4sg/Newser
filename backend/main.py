@@ -146,13 +146,20 @@ try:
             language=language,
             country=country,
         )
-
+    
     search = TavilySearchResults(
         api_key=tavily_api_key,
         max_results=5
     )
-    
-    tools = [search, news_top_headlines, news_everything, news_sources]
+
+    @tool("tavily_search")
+    def tavily_search(query: str) -> dict:
+        """
+        Search the web for information on a given query.
+        """
+        return search.run(query)
+
+    tools = [tavily_search, news_top_headlines, news_everything, news_sources]
 
     # Create the agent with the prompt template
     agent = create_react_agent(model, tools, REACT_PROMPT)
