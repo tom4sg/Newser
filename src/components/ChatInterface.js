@@ -22,9 +22,15 @@ const ChatInterface = ({ messages, onSendMessage }) => {
   };
 
   return (
-    <div className="bg-navy-light rounded-lg shadow-lg overflow-hidden">
+    <div className="bg-white rounded-xl shadow-lg border border-gray-border overflow-hidden">
       {/* Messages container */}
-      <div className="h-[600px] overflow-y-auto p-4">
+      <div className="h-[600px] overflow-y-auto p-6 bg-white">
+        {messages.length === 0 && (
+          <div className="text-center text-text-secondary mt-8">
+            <p className="text-lg">Start a conversation with GutiGPT</p>
+            <p className="text-sm mt-2">Ask me anything!</p>
+          </div>
+        )}
         {messages.map((message, index) => (
           <div
             key={index}
@@ -33,10 +39,10 @@ const ChatInterface = ({ messages, onSendMessage }) => {
             }`}
           >
             <div
-              className={`inline-block max-w-[70%] rounded-lg p-3 ${
+              className={`inline-block max-w-[70%] rounded-2xl p-4 shadow-sm ${
                 message.role === 'user'
-                  ? 'bg-navy-dark text-white'
-                  : 'bg-navy-lighter text-white'
+                  ? 'bg-primary text-white'
+                  : 'bg-gray-lighter text-text-primary'
               }`}
             >
               {message.content}
@@ -47,18 +53,18 @@ const ChatInterface = ({ messages, onSendMessage }) => {
       </div>
 
       {/* Input form */}
-      <form onSubmit={handleSubmit} className="border-t border-navy-lighter p-4">
+      <form onSubmit={handleSubmit} className="border-t border-gray-border p-6 bg-white">
         <div className="flex space-x-4">
           <input
             type="text"
             value={input}
             onChange={(e) => setInput(e.target.value)}
             placeholder="Type your message..."
-            className="flex-1 rounded-lg border border-navy-lighter p-2 focus:outline-none focus:border-white bg-navy-light text-white placeholder-gray-400"
+            className="flex-1 rounded-xl border border-gray-border p-3 focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent bg-white text-text-primary placeholder-text-secondary transition-all"
           />
           <button
             type="submit"
-            className="bg-navy-dark text-white rounded-lg px-4 py-2 hover:bg-navy-darker transition-colors"
+            className="bg-primary text-white rounded-xl px-6 py-3 hover:bg-primary-dark transition-colors duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             disabled={!input.trim()}
           >
             <PaperAirplaneIcon className="h-5 w-5" />

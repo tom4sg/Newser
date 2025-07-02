@@ -12,6 +12,10 @@ from langchain_core.messages import HumanMessage
 from langchain.agents import create_react_agent
 from langchain.agents import AgentExecutor
 from langchain.prompts import PromptTemplate
+from newsapi import NewsApiClient
+from typing import Optional
+from langchain.tools import tool
+
 from dotenv import load_dotenv
 
 # Load environment variables
@@ -27,7 +31,7 @@ app = FastAPI()
 # Add CORS middleware with more permissive settings
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # More permissive for testing
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -60,32 +64,93 @@ Thought: Let me approach this step by step
 
 # Initialize the agent components
 try:
-    logger.debug("Starting agent initialization...")
     
     anthropic_api_key = os.getenv("ANTHROPIC_API_KEY")
     tavily_api_key = os.getenv("TAVILY_API_KEY")
-    
-    logger.debug(f"ANTHROPIC_API_KEY present: {bool(anthropic_api_key)}")
-    logger.debug(f"TAVILY_API_KEY present: {bool(tavily_api_key)}")
-    
-    if not anthropic_api_key:
-        raise ValueError("ANTHROPIC_API_KEY not found in environment variables")
-    if not tavily_api_key:
-        raise ValueError("TAVILY_API_KEY not found in environment variables")
+    news_api_key = os.getenv("NEWS_API_KEY")
     
     model = ChatAnthropic(
         model="claude-3-5-sonnet-20240620",
         anthropic_api_key=anthropic_api_key
     )
-    logger.debug("ChatAnthropic model initialized")
-    
+
+    newsapi = NewsApiClient(api_key=news_api_key)
+
+    @tool("news_top_headlines", return_direct=True)
+    def news_top_headlines(
+        q: Optional[str] = None,
+        sources: Optional[str] = None,
+        category: Optional[str] = None,
+        language: Optional[str] = None,
+        country: Optional[str] = None,
+        page_size: int = 20,
+        page: int = 1,
+    ) -> dict:
+        """
+        Fetch top headlines.  
+        Params mirror NewsAPI: q, sources, category, language, country, page_size, page.
+        """
+        return newsapi.get_top_headlines(
+            q=q,
+            sources=sources,
+            category=category,
+            language=language,
+            country=country,
+            page_size=page_size,
+            page=page,
+        )
+
+    # 3) Wrap /v2/everything
+    @tool("news_everything", return_direct=True)
+    def news_everything(
+        q: str,
+        sources: Optional[str] = None,
+        domains: Optional[str] = None,
+        from_param: Optional[str] = None,
+        to: Optional[str] = None,
+        language: Optional[str] = None,
+        sort_by: Optional[str] = None,
+        page: int = 1,
+        page_size: int = 20,
+    ) -> dict:
+        """
+        Search all articles.  
+        Required: q. Others match NewsAPI’s get_everything signature.
+        """
+        return newsapi.get_everything(
+            q=q,
+            sources=sources,
+            domains=domains,
+            from_param=from_param,
+            to=to,
+            language=language,
+            sort_by=sort_by,
+            page=page,
+            page_size=page_size,
+        )
+
+    @tool("news_sources", return_direct=True)
+    def news_sources(
+        category: Optional[str] = None,
+        language: Optional[str] = None,
+        country: Optional[str] = None,
+    ) -> dict:
+        """
+        List available news sources.  
+        Filters: category, language, country.
+        """
+        return newsapi.get_sources(
+            category=category,
+            language=language,
+            country=country,
+        )
+
     search = TavilySearchResults(
         api_key=tavily_api_key,
-        max_results=2
+        max_results=5
     )
-    logger.debug("TavilySearchResults tool initialized")
     
-    tools = [search]
+    tools = [search, news_top_headlines, news_everything, news_sources]
 
     # Create the agent with the prompt template
     agent = create_react_agent(model, tools, REACT_PROMPT)
