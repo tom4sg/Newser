@@ -15,8 +15,7 @@ from langchain.prompts import PromptTemplate
 from newsapi import NewsApiClient
 from typing import Optional
 from langchain.tools import tool
-from langchain_redis import RedisChatMessageHistory
-from uuid import uuid4
+
 
 from dotenv import load_dotenv
 
@@ -213,16 +212,9 @@ try:
     agent = create_react_agent(model, tools, REACT_PROMPT)
     logger.debug("Agent created successfully")
 
-    memory = RedisChatMessageHistory(
-            session_id=uuid4().hex,
-            redis_url="redis://localhost:6379",
-            ttl=3600
-        )
-    
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
-        memory=memory,
         verbose=True,
         handle_parsing_errors=True,
         max_iterations=6,
