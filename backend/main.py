@@ -170,7 +170,8 @@ try:
         tools=tools,
         verbose=True,
         handle_parsing_errors=True,
-        max_iterations=3
+        max_iterations=6,
+        max_execution_time=60
     )
     logger.debug("AgentExecutor initialized successfully")
     
