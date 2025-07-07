@@ -12,4 +12,6 @@ langchain-redis>=0.2.3
 sentence-transformers
 redis>=5.0.1
 newsapi-python
+langchain-redis
+redis[search]
 pydantic>=2.7.0

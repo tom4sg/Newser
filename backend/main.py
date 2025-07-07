@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic.v1 import BaseModel
+from pydantic import BaseModel
 import os
 import logging
 import traceback
@@ -242,7 +242,7 @@ async def chat(request: ChatRequest):
     try:
         history = RedisChatMessageHistory(
             session_id = uuid4().hex, url=os.getenv("REDIS_URL")
-            )
+        )
         
         history.add_user_message(request.message)
 
