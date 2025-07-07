@@ -232,6 +232,7 @@ except Exception as e:
 
 class ChatRequest(BaseModel):
     message: str
+    session_id: str
 
 class ChatResponse(BaseModel):
     response: str
@@ -241,7 +242,7 @@ class ChatResponse(BaseModel):
 async def chat(request: ChatRequest):
     try:
         history = RedisChatMessageHistory(
-            session_id = uuid4().hex, url=os.getenv("REDIS_URL")
+            session_id = request.session_id, url=os.getenv("REDIS_URL")
         )
         
         history.add_user_message(request.message)

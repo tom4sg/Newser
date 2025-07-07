@@ -4,10 +4,21 @@ import './App.css';
 
 function App() {
   const [messages, setMessages] = useState([]);
+  const [sessionId, setSessionId] = useState(null);
   
   // Get the API URL from environment variable
   const API_URL = process.env.REACT_APP_API_URL;
-  
+
+  useEffect(() => {
+    // Load or generate session_id on first mount
+    let storedId = localStorage.getItem("chat_session_id");
+    if (!storedId) {
+      storedId = crypto.randomUUID();
+      localStorage.setItem("chat_session_id", storedId);
+    }
+    setSessionId(storedId);
+  }, []);
+
   useEffect(() => {
     // Check if API_URL is properly configured (logging only for debugging)
     if (!API_URL) {
@@ -37,7 +48,7 @@ function App() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ message }),
+        body: JSON.stringify({ message, session_id: sessionId }),
       });
 
       const data = await response.json();
