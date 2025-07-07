@@ -216,10 +216,10 @@ try:
     agent_executor = AgentExecutor(
         agent=agent,
         tools=tools,
-        verbose=True,
+        verbose=False,
         handle_parsing_errors=True,
-        max_iterations=6,
-        max_execution_time=60
+        max_iterations=3,
+        max_execution_time=30,
     )
     logger.debug("AgentExecutor initialized successfully")
     
