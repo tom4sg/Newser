@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -16,9 +16,7 @@ from newsapi import NewsApiClient
 from typing import Optional
 from langchain.tools import tool
 from langchain_community.chat_message_histories import RedisChatMessageHistory
-from redis import Redis
-from uuid import uuid4
-
+from langchain_core.runnables import RunnableConfig
 
 from dotenv import load_dotenv
 
@@ -244,15 +242,25 @@ async def chat(request: ChatRequest):
         history = RedisChatMessageHistory(
             session_id = request.session_id, url=os.getenv("REDIS_URL")
         )
-        
+
         history.add_user_message(request.message)
 
-        # Process the message through the agent
-        response = await agent_executor.ainvoke({"input": request.message})
+        messages = history.messages
+
+        formatted_history = ""
+        for msg in messages:
+            role = "User" if msg.type == "human" else "AI"
+            formatted_history += f"{role}: {msg.content}\n"
+
+        # Use it in prompt
+        response = await agent_executor.ainvoke({
+            "input": f"User Message: {request.message}\nChat History: {formatted_history}"
+        })
+
         history.add_ai_message(response["output"])
         
         return ChatResponse(response=response["output"])
-            
+        
     except Exception as e:
         error_trace = traceback.format_exc()
         logger.error(f"Error processing chat request: {str(e)}")
