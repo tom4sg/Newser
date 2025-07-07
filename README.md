@@ -1,6 +1,7 @@
 # Newser
 
 A chat interface for staying up to date with breaking news and pop culture on the daily. 
+![Screenshot 2025-07-02 at 2 51 04 AM](https://github.com/user-attachments/assets/9aa16b5c-961b-4dd3-8246-200684995f94)
 
 ## Project Structure
 
