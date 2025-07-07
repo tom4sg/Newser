@@ -1,7 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from pydantic import BaseModel
+from pydantic.v1 import BaseModel
 import os
 import logging
 import traceback
@@ -15,6 +15,10 @@ from langchain.prompts import PromptTemplate
 from newsapi import NewsApiClient
 from typing import Optional
 from langchain.tools import tool
+from langchain_community.chat_message_histories import RedisChatMessageHistory
+from redis import Redis
+from uuid import uuid4
+
 
 from dotenv import load_dotenv
 
@@ -236,13 +240,15 @@ class ChatResponse(BaseModel):
 @app.post("/api/chat", response_model=ChatResponse)
 async def chat(request: ChatRequest):
     try:
-        logger.debug(f"Received chat request: {request.message}")
+        history = RedisChatMessageHistory(
+            session_id = uuid4().hex, url=os.getenv("REDIS_URL")
+            )
+        
+        history.add_user_message(request.message)
 
         # Process the message through the agent
-        logger.debug("Starting agent invocation...")
         response = await agent_executor.ainvoke({"input": request.message})
-        
-        logger.debug(f"Agent response: {response}")
+        history.add_ai_message(response["output"])
         
         return ChatResponse(response=response["output"])
             
